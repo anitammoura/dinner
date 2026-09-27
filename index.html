@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What's for Dinner?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #E9EFE3;
+    --card: #F7F8F2;
+    --ink: #2B3328;
+    --ink-soft: #5A6650;
+    --accent: #E2A33D;
+    --accent-ink: #2B3328;
+    --tomato: #C1502E;
+    --chip-off: #DDE5D2;
+    --border: #C9D3BC;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #1B2118;
+      --card: #232A1F;
+      --ink: #EAF0E2;
+      --ink-soft: #A9B79C;
+      --accent: #E9B35C;
+      --accent-ink: #1B2118;
+      --chip-off: #2E3627;
+      --border: #3A4433;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1B2118;
+    --card: #232A1F;
+    --ink: #EAF0E2;
+    --ink-soft: #A9B79C;
+    --accent: #E9B35C;
+    --accent-ink: #1B2118;
+    --chip-off: #2E3627;
+    --border: #3A4433;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100%;
+    padding: calc(24px + env(safe-area-inset-top, 0px)) 16px calc(32px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    justify-content: center;
+  }
+  .app { width: 100%; max-width: 460px; }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.7rem;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  .sub { color: var(--ink-soft); font-size: 0.92rem; margin: 0 0 22px; line-height: 1.4; }
+  .group { margin-bottom: 18px; }
+  .group-label { font-size: 0.82rem; color: var(--ink-soft); margin-bottom: 8px; font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: 1px solid var(--border);
+    background: var(--chip-off);
+    color: var(--ink);
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+  .ingredient-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    background: var(--chip-off);
+    color: var(--ink);
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-family: inherit;
+  }
+  .ingredient-input::placeholder { color: var(--ink-soft); }
+  .ingredient-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .cta {
+    width: 100%;
+    padding: 15px;
+    margin-top: 6px;
+    border: none;
+    border-radius: 12px;
+    background: var(--tomato);
+    color: #FBF3EC;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .cta:active { transform: scale(0.99); }
+  .result {
+    margin-top: 26px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 20px 22px;
+    display: none;
+  }
+  .result.show { display: block; animation: rise 0.3s ease; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .result-meta { font-size: 0.8rem; color: var(--ink-soft); margin-bottom: 2px; }
+  .result-name { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 600; margin: 2px 0 14px; }
+  .result h3 { font-size: 0.78rem; text-transform: none; color: var(--ink-soft); margin: 16px 0 8px; font-weight: 600; }
+  .result ul, .result ol { margin: 0; padding-left: 20px; font-size: 0.92rem; line-height: 1.55; }
+  .result li { margin-bottom: 4px; }
+  .again {
+    background: none;
+    border: none;
+    color: var(--tomato);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    margin-top: 16px;
+  }
+  .empty { color: var(--ink-soft); font-size: 0.9rem; margin-top: 26px; }
+  @media (prefers-reduced-motion: reduce) {
+    .result.show { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>What's for dinner?</h1>
+  <p class="sub">Tell it how much time you've got, and it'll hand you something real to cook — no scrolling required.</p>
+
+  <div class="group">
+    <div class="group-label">Time on the clock</div>
+    <div class="chips" id="timeChips">
+      <button class="chip" data-time="15">15 min</button>
+      <button class="chip" data-time="25">25 min</button>
+      <button class="chip" data-time="40">40 min</button>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-label">Any of these apply?</div>
+    <div class="chips" id="tagChips">
+      <button class="chip" data-tag="veg">Vegetarian</button>
+      <button class="chip" data-tag="kid">Picky kids</button>
+      <button class="chip" data-tag="onepot">One pot only</button>
+      <button class="chip" data-tag="lowcarb">Low carb</button>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-label">Got ingredients to use up?</div>
+    <input type="text" id="ingredientInput" class="ingredient-input" placeholder="e.g. chicken, spinach, rice">
+  </div>
+
+  <button class="cta" id="goBtn">Find dinner</button>
+  <p class="empty" id="emptyMsg" style="display:none;">Nothing fits every filter at once — try dropping one.</p>
+
+  <div class="result" id="result">
+    <div class="result-meta" id="resMeta"></div>
+    <div class="result-name" id="resName"></div>
+    <h3>Ingredients</h3>
+    <ul id="resIng"></ul>
+    <h3>Steps</h3>
+    <ol id="resSteps"></ol>
+    <button class="again" id="againBtn">Show me another →</button>
+  </div>
+</div>
+
+<script>
+const RECIPES = [
+  { name: "Garlic Butter Shrimp & Greens", time: 15, tags: ["lowcarb"],
+    ingredients: ["1 lb shrimp, peeled", "3 tbsp butter", "4 cloves garlic, minced", "1 bag baby spinach", "Lemon wedge", "Salt & pepper"],
+    steps: ["Melt butter in a large skillet over medium-high heat.", "Add garlic, cook 30 seconds until fragrant.", "Add shrimp, cook 2 min per side until pink.", "Push shrimp aside, wilt in spinach.", "Squeeze lemon over everything, season, serve."] },
+  { name: "Sheet-Pan Sausage & Veggies", time: 25, tags: ["onepot", "lowcarb"],
+    ingredients: ["4 chicken sausages, sliced", "2 bell peppers, chunked", "1 zucchini, chunked", "1 red onion, wedged", "2 tbsp olive oil", "Italian seasoning"],
+    steps: ["Heat oven to 425°F (220°C).", "Toss everything on a sheet pan with oil and seasoning.", "Spread in a single layer.", "Roast 20 min, flipping once halfway."] },
+  { name: "One-Pot Tomato Basil Pasta", time: 25, tags: ["veg", "onepot", "kid"],
+    ingredients: ["12 oz pasta", "1 can crushed tomatoes", "2 cups vegetable broth", "1 tsp garlic powder", "Handful fresh basil", "Parmesan to serve"],
+    steps: ["Combine pasta, tomatoes, broth, and garlic powder in a pot.", "Bring to a boil, then simmer uncovered 10-12 min, stirring occasionally.", "Once pasta is tender and sauce has thickened, stir in basil.", "Top with parmesan and serve."] },
+  { name: "Crispy Quesadillas", time: 15, tags: ["veg", "kid"],
+    ingredients: ["4 flour tortillas", "2 cups shredded cheese", "1 cup black beans, drained", "1/2 cup corn", "Sour cream to serve"],
+    steps: ["Scatter cheese, beans, and corn over half of each tortilla.", "Fold over and press.", "Cook in a dry skillet 2-3 min per side until golden and melty.", "Slice into wedges, serve with sour cream."] },
+  { name: "Honey Soy Salmon Bowls", time: 25, tags: ["lowcarb"],
+    ingredients: ["4 salmon fillets", "3 tbsp soy sauce", "2 tbsp honey", "1 tbsp rice vinegar", "Cooked rice", "Steamed broccoli"],
+    steps: ["Whisk soy sauce, honey, and vinegar together.", "Sear salmon in a hot pan 3-4 min per side.", "Pour sauce over salmon in the last minute, let it glaze.", "Serve over rice with broccoli."] },
+  { name: "Loaded Sweet Potato Skins", time: 40, tags: ["veg", "lowcarb"],
+    ingredients: ["4 sweet potatoes", "1 cup black beans", "1 cup shredded cheese", "1/2 cup Greek yogurt", "Chopped scallions"],
+    steps: ["Pierce sweet potatoes and microwave 8-10 min until soft.", "Halve, scoop out a bit of flesh, top with beans and cheese.", "Broil 3-4 min until cheese bubbles.", "Top with yogurt and scallions."] },
+  { name: "Turkey & Veggie Stir-Fry", time: 15, tags: ["onepot", "lowcarb"],
+    ingredients: ["1 lb ground turkey", "1 bag frozen stir-fry veggies", "3 tbsp soy sauce", "1 tbsp sesame oil", "1 tsp ginger, minced"],
+    steps: ["Brown turkey in a large skillet, breaking it up, 5 min.", "Add veggies straight from frozen, cook 5 min.", "Stir in soy sauce, sesame oil, and ginger.", "Cook 2 more min until veggies are tender."] },
+  { name: "Cheesy Baked Ziti (fast version)", time: 40, tags: ["veg", "kid"],
+    ingredients: ["1 lb ziti", "1 jar marinara", "2 cups ricotta", "2 cups shredded mozzarella", "1 egg"],
+    steps: ["Boil pasta until just shy of al dente, drain.", "Mix ricotta with egg, stir through pasta with marinara.", "Pour into a baking dish, top with mozzarella.", "Bake at 400°F (200°C) for 20 min until bubbly."] },
+  { name: "Black Bean & Cheese Tacos", time: 15, tags: ["veg", "kid"],
+    ingredients: ["8 small tortillas", "1 can black beans", "1 tsp cumin", "Shredded cheese", "Salsa & lime"],
+    steps: ["Warm beans with cumin in a small pot, mashing slightly.", "Warm tortillas in a dry skillet.", "Fill with beans and cheese.", "Top with salsa and a squeeze of lime."] },
+  { name: "Chicken & Rice Skillet", time: 25, tags: ["onepot"],
+    ingredients: ["4 chicken thighs", "1 cup rice", "2 cups chicken broth", "1 cup frozen peas & carrots", "1 tsp paprika"],
+    steps: ["Sear chicken thighs in a skillet, 4 min per side, remove.", "Add rice to the same pan, toast 1 min.", "Add broth and paprika, nestle chicken back in.", "Cover, simmer 18 min, stir in peas & carrots for the last 3."] }
+];
+
+let selectedTime = null;
+let selectedTags = new Set();
+let lastShown = null;
+
+document.getElementById('timeChips').addEventListener('click', e => {
+  if (!e.target.classList.contains('chip')) return;
+  document.querySelectorAll('#timeChips .chip').forEach(c => c.classList.remove('active'));
+  e.target.classList.add('active');
+  selectedTime = parseInt(e.target.dataset.time, 10);
+});
+
+document.getElementById('tagChips').addEventListener('click', e => {
+  if (!e.target.classList.contains('chip')) return;
+  const tag = e.target.dataset.tag;
+  if (selectedTags.has(tag)) {
+    selectedTags.delete(tag);
+    e.target.classList.remove('active');
+  } else {
+    selectedTags.add(tag);
+    e.target.classList.add('active');
+  }
+});
+
+function matches(recipe) {
+  const timeOk = selectedTime ? recipe.time <= selectedTime : true;
+  const tagsOk = [...selectedTags].every(t => recipe.tags.includes(t));
+  return timeOk && tagsOk;
+}
+
+function showRecipe(recipe) {
+  lastShown = recipe;
+  document.getElementById('resMeta').textContent = `Ready in about ${recipe.time} min`;
+  document.getElementById('resName').textContent = recipe.name;
+  document.getElementById('resIng').innerHTML = recipe.ingredients.map(i => `<li>${i}</li>`).join('');
+  document.getElementById('resSteps').innerHTML = recipe.steps.map(s => `<li>${s}</li>`).join('');
+  document.getElementById('result').classList.add('show');
+  document.getElementById('emptyMsg').style.display = 'none';
+}
+
+function getIngredientKeywords() {
+  return document.getElementById('ingredientInput').value
+    .toLowerCase()
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
+function ingredientHits(recipe, keywords) {
+  const text = recipe.ingredients.join(' ').toLowerCase();
+  return keywords.filter(k => text.includes(k)).length;
+}
+
+function pickDinner() {
+  const keywords = getIngredientKeywords();
+  let candidatePool = RECIPES.filter(matches);
+
+  if (keywords.length) {
+    // Mandatory: recipe must contain every ingredient the person typed.
+    candidatePool = candidatePool.filter(r => ingredientHits(r, keywords) === keywords.length);
+  }
+
+  const freshPool = candidatePool.filter(r => r !== lastShown);
+  const finalPool = freshPool.length ? freshPool : candidatePool;
+
+  if (!finalPool.length) {
+    document.getElementById('result').classList.remove('show');
+    document.getElementById('emptyMsg').textContent = keywords.length
+      ? "No recipe uses all of those ingredients together — try fewer, or drop a filter."
+      : "Nothing fits every filter at once — try dropping one.";
+    document.getElementById('emptyMsg').style.display = 'block';
+    return;
+  }
+
+  const choice = finalPool[Math.floor(Math.random() * finalPool.length)];
+  showRecipe(choice);
+}
+
+document.getElementById('goBtn').addEventListener('click', pickDinner);
+document.getElementById('againBtn').addEventListener('click', pickDinner);
+</script>
+</body>
+</html>
